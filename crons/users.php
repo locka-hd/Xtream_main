@@ -356,30 +356,6 @@ function closeConnection($rConnection, &$rRedisDelete) {
     }
 }
 
-function processDeletions($rDelete) {
-    global $ipTV_db;
-
-    try {
-        if (ipTV_lib::$settings['redis_handler']) {
-            $rRedis = ipTV_lib::$redis->multi();
-
-            foreach ($rDelete['uuid'] as $uuid) {
-                $rRedis->del($uuid);
-            }
-            foreach ($rDelete['line'] as $rUserID => $rUUIDs) {
-                $rRedis->zRem('LINE#' . $rUserID, ...$rUUIDs);
-                $rRedis->zRem('LINE_ALL#' . $rUserID, ...$rUUIDs);
-            }
-
-            $rRedis->exec();
-        } else {
-            $ipTV_db->query("DELETE FROM `lines_live` WHERE `uuid` IN ('" . implode("','", $rDelete['uuid']) . "')");
-        }
-    } catch (Exception $e) {
-        error_log("Error in processDeletions: " . $e->getMessage());
-    }
-}
-
 function cleanupLinesLive() {
     global $ipTV_db;
 
